@@ -1,0 +1,36 @@
+---  #SSH User Revoking access in ec2 instances
+- hosts: "{{ tagname }}"
+  become: yes
+  become_method: sudo
+  serial: "1%"
+  vars_prompt:
+     - name: username
+       prompt: Plz Enter the Username.
+       private: no
+     - name: "Press Enter Button if the username is correct"
+       pause:
+          prompt: "yes"
+  tasks:
+  - name: Revoke  ssh user access
+    user:
+     name: '{{username}}'
+     state: absent
+    tags: userremove-tag
+    register:  result
+  - debug: var=result
+  - name: deletion of  home of directory
+    raw: rm -rf /home/{{username}}/
+    tags: userhomedeteltion-tag
+    register:  result
+  - debug: var=result
+  - lineinfile:
+     name: /etc/sudoers
+     state: absent
+     line: '{{username}}  ALL=(ALL) NOPASSWD: ALL'
+     validate: '/usr/sbin/visudo -cf %s'
+    tags: userremovalinsudoersfile-tag
+    register:  result
+  - debug: var=result
+
+
+
