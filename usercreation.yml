@@ -1,0 +1,47 @@
+---  # SSH User Access Creation  in ec2 instances
+- hosts: "{{ tagname }}"
+  become: yes
+  become_method: sudo
+  serial: "1%"
+  vars_prompt:
+     - name: username
+       prompt: Plz Enter the Username
+       private: no
+     - name: "Press Enter Button if the username is correct"
+       pause:
+          prompt: "yes"
+  tasks:
+  - name: creation  of ssh user access
+    user:
+     name: '{{username}}'
+     state: present
+    tags: useradding-tag
+    register:  result
+  - debug: var=result
+  - name: create ssh directory
+    file:
+     path: /home/{{username}}/.ssh
+     state: directory
+     owner: '{{username}}'
+     group: '{{username}}'
+     mode: 0700
+    tags: usersshkeysupdate-tag
+    register:  result
+  - debug: var=result
+  - lineinfile:
+     name: /etc/sudoers
+     state: present
+     line: '{{username}}  ALL=(ALL) NOPASSWD: ALL'
+     validate: '/usr/sbin/visudo -cf %s'
+    tags: useraddinginsudoersfile-tag
+  - copy:
+     src: /root/ansible/usercreation/pubkeys
+     dest: /home/{{username}}/.ssh/authorized_keys
+     owner: '{{username}}'
+     group: '{{username}}'
+     mode:  0600
+    tags: useraddingwithpubkeys-tag
+  - name:
+    local_action: copy content="{{ result.stdout }}" dest="/root/ansible/usercreation/output.log"
+
+
