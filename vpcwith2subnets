@@ -1,0 +1,67 @@
+{
+    "Resources": {
+       
+          "WorldVPC": {
+            "Type": "AWS::EC2::VPC",
+            "Properties": {
+                "CidrBlock": "20.0.0.0/16",
+                "EnableDnsSupport": true,
+                "EnableDnsHostnames": true,
+                "InstanceTenancy": "default",
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "Dev-VPC"
+                    }
+                ]
+            }
+        },
+		"PRIWVPC" : {
+ "Type" : "AWS::EC2::Subnet",
+ "Properties" : {
+ "VpcId" : { "Ref" : "WorldVPC" },
+ "CidrBlock" : "20.0.1.0/24",
+ "Tags" : [
+ {
+ "Key" : "Name", 
+ "Value" :"PrivateSubnet-WorldVPC"
+}
+]
+}		
+ },
+ 
+ 
+ "PUBWVPC" : {
+ "Type" : "AWS::EC2::Subnet",
+ "Properties" : {
+ "VpcId" : { "Ref" : "WorldVPC" },
+ "CidrBlock" : "20.0.2.0/24",
+ "Tags" : [
+ {
+ "Key" : "Name", 
+ "Value" :"PublicSubnet-WorldVPC"
+}
+]
+}		
+ },
+ 
+ "PUBWVPC2" : {
+ "Type" : "AWS::EC2::Subnet",
+ "Properties" : {
+ "VpcId" : { "Ref" : "WorldVPC" },
+ "CidrBlock" : "20.0.3.0/24",
+ "Tags" : [
+ {
+ "Key" : "Name", 
+ "Value" :"PublicSubnet2-WorldVPC"
+}
+]
+}		
+ }
+ 
+ 
+       
+       
+       
+    }
+}

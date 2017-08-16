@@ -1,0 +1,235 @@
+{
+"AWSTemplateFormatVersion" : "2010-09-09",
+"Description" : " AWS CloudFormation template HAR",
+
+
+  "Parameters" : {
+    "Keypair" : {
+      "Description" : " existing EC2 KeyPair ",
+      "Type" : "String",
+      "Default" : "testcloudvpcserverskey",
+      "MinLength": "1",
+      "MaxLength": "64",
+      "AllowedPattern" : "[-_ a-zA-Z0-9]*",
+      "ConstraintDescription" : "can contain only alphanumeric characters, spaces, dashes and underscores."
+   },
+   
+   "InstanceType" : {
+      "Description" : "new ec2instance type",
+      "Type" : "String",
+      "Default" : "t2.micro",
+      "AllowedValues" : [ "t2.micro","m1.small","m1.medium","m1.large"],
+      "ConstraintDescription" : "must be a valid and allowed EC2 instance type."
+
+    }
+
+},
+
+"Mappings" : {
+ "AWSInstanceType2Arch" : {
+ "t2.micro" : { "Arch" : "32" },
+ "m1.small" : { "Arch" : "64" },
+ "m1.medium" : { "Arch" : "64" },
+ "m1.large" : { "Arch" : "64" },
+ "m1.xlarge" : { "Arch" : "64" },
+ "m2.xlarge" : { "Arch" : "64" },
+ "m2.2xlarge" : { "Arch" : "64" },
+ "m2.4xlarge" : { "Arch" : "64" },
+ "m3.xlarge" : { "Arch" : "64" },
+ "m3.2xlarge" : { "Arch" : "64" },
+ "c1.medium" : { "Arch" : "64" },
+ "c1.xlarge" : { "Arch" : "64" }
+ },
+ 
+  "RegionMap" : {
+      "us-east-1"      : { "AMI" : "ami-a4c7edb2" },
+      "us-west-1"      : { "AMI" : "ami-951945d0" },
+      "us-west-2"      : { "AMI" : "ami-16fd7026" },
+      "eu-west-1"      : { "AMI" : "ami-24506250" },
+      "sa-east-1"      : { "AMI" : "ami-3e3be423" },
+      "ap-southeast-1" : { "AMI" : "ami-74dda626" },
+      "ap-southeast-2" : { "AMI" : "ami-b3990e89" },
+      "ap-northeast-1" : { "AMI" : "ami-dcfa4edd" }
+    },
+   
+    "InstanceAMI" : {
+      "us-east-1"      : { "AMI" : "ami-a4c7edb2" }
+       
+  }
+ 
+ 
+},
+
+
+
+
+
+
+
+
+ 
+
+        "Resources": {
+           
+              "WorldVPC": {
+                "Type": "AWS::EC2::VPC",
+                "Properties": {
+                    "CidrBlock": "20.0.0.0/16",
+                    "EnableDnsSupport": true,
+                    "EnableDnsHostnames": true,
+                    "InstanceTenancy": "default",
+                    "Tags": [
+                        {
+                            "Key": "Name",
+                            "Value": "WorldVPC"
+                        }
+                    ]
+                }
+            },
+    		"PRISUB1" : {
+     "Type" : "AWS::EC2::Subnet",
+     "Properties" : {
+     "VpcId" : { "Ref" : "WorldVPC" },
+     "CidrBlock" : "20.0.1.0/24",
+     "Tags" : [
+     {
+     "Key" : "Name", 
+     "Value" :"PrivSubnet-1-WorldVPC"
+    }
+    ]
+    }		
+     },
+     
+     "PUBSUB1" : {
+     "Type" : "AWS::EC2::Subnet",
+     "Properties" : {
+     "VpcId" : { "Ref" : "WorldVPC" },
+     "CidrBlock" : "20.0.3.0/24",
+     "Tags" : [
+     {
+     "Key" : "Name", 
+     "Value" :"PubSubnet-1-WorldVPC"
+    }
+    ]
+    }		
+     },
+          "PriRT" : {
+             "Type" : "AWS::EC2::RouteTable",
+             "Properties" : {
+                "VpcId" : { "Ref" : "WorldVPC" },
+                "Tags" : [ { "Key" : "Name", "Value" : "PrivRT" } ]
+             
+          }
+       },
+          "PubRT" : {
+             "Type" : "AWS::EC2::RouteTable",
+             "Properties" : {
+                "VpcId" : { "Ref" : "WorldVPC" },
+                "Tags" : [ { "Key" : "Name", "Value" : "PubRT" } ]
+             }
+          },
+    	  
+    	   "PriRTPRISUB1RTAssociation" : {
+             "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+             "Properties" : {
+                "SubnetId" : { "Ref" : "PRISUB1" },
+                "RouteTableId" : { "Ref" : "PriRT" }
+             }
+          },
+    	  
+    	  "PubRTPUBISUB1RTAssociation" : {
+             "Type" : "AWS::EC2::SubnetRouteTableAssociation",
+             "Properties" : {
+                "SubnetId" : { "Ref" : "PUBSUB1" },
+                "RouteTableId" : { "Ref" : "PubRT" }
+             }
+          },
+    	  "MIGW" : {
+             "Type" : "AWS::EC2::InternetGateway",
+             "Properties" : {
+                "Tags" : [ {"Key" : "Name", "Value" : "IGW-WorldVPC"}]
+             }
+          },
+          "AttachGateway" : {
+       "Type" : "AWS::EC2::VPCGatewayAttachment",
+       "Properties" : {
+          "VpcId" : { "Ref" : "WorldVPC" },
+          "InternetGatewayId" : { "Ref" : "MIGW" }
+       }
+    },
+    	  "MyRoute" : {
+             "Type" : "AWS::EC2::Route",
+             "DependsOn" : "AttachGateway",
+             "Properties" : {
+                "RouteTableId" : { "Ref" : "PubRT" },
+                "DestinationCidrBlock" : "0.0.0.0/0",
+                "GatewayId" : { "Ref" : "MIGW" }
+             }
+    	  },
+    	  
+    	  "EC2SG" : {
+      "Type" : "AWS::EC2::SecurityGroup",
+      "Properties" : {
+        "GroupDescription" : "Security groups",
+         "Tags" : [
+        {"Key": "Name", "Value": "CloudFormation-EC2-SG"}
+         ],
+		
+        "VpcId" : { "Ref" : "WorldVPC" },
+        "SecurityGroupIngress" : [
+           { "IpProtocol" : "tcp", "FromPort" : "22",  "ToPort" : "22",  "CidrIp" : "0.0.0.0/0"},
+            { "IpProtocol" : "tcp", "FromPort" : "80",  "ToPort" : "80",  "CidrIp" : "0.0.0.0/0"} ] ,
+		          "SecurityGroupEgress" : [
+           { "IpProtocol" : "tcp", "FromPort" : "1",  "ToPort" : "65535",  "CidrIp" : "0.0.0.0/0"} ]
+      }
+    },
+    
+    
+    
+    "Instance" : {
+      "Type" : "AWS::EC2::Instance",
+      "Properties" : {
+        "KeyName" : { "Ref" : "Keypair" },
+        "InstanceType" : { "Ref" : "InstanceType" },
+		 
+        "ImageId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+                                          "NetworkInterfaces" : [
+                                            { "DeviceIndex" : "0",
+                                              "AssociatePublicIpAddress" : "true",
+                                              "DeleteOnTermination" : "true",
+                                              "SubnetId" : { "Ref" : "PUBSUB1" },
+                                              "GroupSet" : [ { "Ref" : "EC2SG" } ]
+                                            }
+                                          ],
+        "Tags" : [
+        {"Key": "Name", "Value": "CloudFormation-Instance"}
+         ],
+         "BlockDeviceMappings" : [
+          {
+            "DeviceName" : "/dev/xvda",
+            "Ebs" : { "VolumeSize" : "8" } 
+          }],
+         "UserData"       : { "Fn::Base64" : { "Fn::Join" : ["", [
+      "#!/bin/bash -ex\n",
+      "sudo yum install httpd -y",
+         "sudo service httpd restart "
+    ]]}}
+      }}
+
+     
+     
+           
+           
+           
+           
+           
+           
+           
+           
+           
+        }
+}
+ 
+
+
+

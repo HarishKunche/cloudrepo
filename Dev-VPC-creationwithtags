@@ -1,0 +1,16 @@
+{
+    "Resources": {
+        "VPC": {
+            "Type": "AWS::EC2::VPC",
+            "Properties": {
+                "CidrBlock": "20.0.0.0/16",
+                "EnableDnsSupport": true,
+                "EnableDnsHostnames": true,
+                "InstanceTenancy": "default",
+                "Tags" : [ { "Key" : "Name", "Value" : "Dev-VPC" } ]
+                               
+                
+            }
+        }
+    }
+}
