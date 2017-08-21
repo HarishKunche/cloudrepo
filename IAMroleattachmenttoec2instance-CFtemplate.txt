@@ -1,0 +1,116 @@
+{
+    "AWSTemplateFormatVersion": "2010-09-09",
+    "Description": "Creating EC2 instance for testing userdata ",
+    "Parameters": {
+        "InstanceType": {
+            "Description": " EC2 instance type",
+            "Type": "String",
+            "Default": "t2.micro",
+            "ConstraintDescription": "Must be a valid EC2 instance type."
+        },
+        "KeyName": {
+            "Description": "Name of an existing EC2 KeyPair to enable SSH access to the instance",
+            "Type": "AWS::EC2::KeyPair::KeyName",
+            "ConstraintDescription": "must be the name of an existing EC2 KeyPair."
+        },
+        "SecurityGroupID": {
+            "Description": "Name of your security group",
+            "Type": "String",
+            "Default": "sg-9c4bb6f8",
+            "ConstraintDescription": "You must be the security group id, should be in same VPC as like your subnet"
+        },
+        "AMI": {
+            "Description": "Name of your Ec2 instance Image Id",
+            "Type": "String",
+            "Default": "ami-a4c7edb2",
+            "ConstraintDescription": "You must be a valid ami id and should exists in your region"
+        },
+        "Subnet": {
+            "Description": "Subnet ID",
+            "Type": "String",
+            "Default": "subnet-e58879ce",
+            "ConstraintDescription": "You must be a valid ami id"
+        },
+        "IAMROLE": {
+            "Description": "Role Description",
+            "Type": "String",
+            "Default": "EC2_STAGE",
+            "ConstraintDescription": "Must be a valid IAM Role"
+        },
+        "RootVolumeSize": {
+            "Description": "Volume Size for your root disk",
+            "Type": "String",
+            "Default": "30",
+            "ConstraintDescription": "You must specify a value of size"
+        }
+    },
+    "Resources": {
+        "mytestinginstanceforuserdata": {
+            "Type": "AWS::EC2::Instance",
+            "Properties": {
+                "InstanceType": {
+                    "Ref": "InstanceType"
+                },
+                "Tags": [
+                    {
+                        "Key": "Name",
+                        "Value": "preprod-userdata-testing"
+                    }
+                ],
+                "SecurityGroupIds": [
+                    {
+                        "Ref": "SecurityGroupID"
+                    }
+                ],
+                "KeyName": {
+                    "Ref": "KeyName"
+                },
+                "SubnetId": {
+                    "Ref": "Subnet"
+                },
+                "IamInstanceProfile": {
+                    "Ref": "IAMROLE"
+                },
+                "ImageId": {
+                    "Ref": "AMI"
+                },
+                "BlockDeviceMappings": [
+                    {
+                        "DeviceName": "/dev/xvda",
+                        "Ebs": {
+                            "VolumeSize": {
+                                "Ref": "RootVolumeSize"
+                            }
+                        }
+                    }
+                ],
+                "UserData": {
+                    "Fn::Base64": {
+                        "Fn::Join": [
+                            "",
+                            [
+                                "#!/bin/bash -ex\n",
+                                "# set the time zone form utc to IST",
+                                "sudo rm -rf /etc/localtime",
+                                "sudo ln -s /usr/share/zoneinfo/Asia/Kolkata /etc/localtime",
+                                "# update linux kernal",
+                                "sudo yum update -y",
+                                "# remove open jdk",
+                                "sudo yum remove java -y",
+                                "# download oracle JDK from s3 bucket",
+                                " cd /opt/",
+                                "sudo aws s3 cp s3://queries-ff/java/jdk-8u45-linux-x64.rpm .",
+                                "# install Oracle JDK",
+                                "sudo rpm -ivh  jdk-8u45-linux-x64.rpm",
+                                "# user creation for farmersfirst",
+                                "sudo useradd farmersfirst",
+                                "# provide sudo access for farmersfirst user",
+                                "sudo echo \"farmersfirst  ALL=(ALL) NOPASSWD: ALL\" >> /etc/sudoers"
+                            ]
+                        ]
+                    }
+                }
+            }
+        }
+    }
+}
