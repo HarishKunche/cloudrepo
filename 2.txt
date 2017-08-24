@@ -1,0 +1,28 @@
+---
+- hosts: dev
+#  connection: local
+  sudo: true
+
+  tasks:
+
+    - name: Create user
+      user: name=myuser4 comment="My User"
+
+    - name: Add user to sudoers
+      lineinfile: "dest=/etc/sudoers
+      insertafter=EOF
+      line=' myuser4 ALL=(ALL) NOPASSWD: ALL'
+      regexp='myuser4 ALL=(ALL) NOPASSWD: ALL'
+      state=present"
+
+    - name: setup
+      authorized_key: user=myuser4 key="{{ item }}"
+      with_file:
+        - /home/myuser4/.ssh/id_rsa.pub
+
+    - name: Give the required permission to ssh
+      file: path=/home/myuser4 mode=0700 owner=myuser4 group=myuser4
+
+    - name: Revert back the permission
+      file: path=/home/myuser4 mode=0700 owner=myuser4 group=myuser4
+

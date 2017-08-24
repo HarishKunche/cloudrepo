@@ -1,0 +1,68 @@
+---
+- hosts: dev
+#  connection: local
+#  sudo: true
+
+  tasks:
+
+    - name: Create user
+      user: name=myuser4 comment="My User"
+
+    - name: Add user to sudoers
+      lineinfile: "dest=/etc/sudoers
+      insertafter=EOF
+      line=' myuser4 ALL=(ALL) NOPASSWD: ALL'
+      regexp='myuser4 ALL=(ALL) NOPASSWD: ALL'
+      state=present"
+
+#    - name: add ssh with required permissions
+#      file: path=/home/myuser4/.ssh state=directory mode=0700 owner=myuser4
+
+#    - name: Generate ssh keys
+#      shell: ssh-keygen -t rsa  -b 4096 -C venkataravi.remella@yash.com -N aarthi -f /home/myuser4/.ssh/id_rsa
+#      args:
+#        creates: /home/myuser4/.ssh/id_rsa
+
+#    - name: Give the required permission to ssh
+#      file: path=/home/myuser4/.ssh/id_rsa.pub mode=0700 owner=myuser4 group=myuser4
+
+#    - name: Give the required permission to ssh
+#      file: path=/home/myuser4/.ssh/id_rsa mode=0700 owner=myuser4 group=myuser4
+
+#     - name: Add sudo permission
+#       command: sudo su myuser4
+
+#     - name: change directory
+#       command: ls -ltr /home/myuser4/.ssh/id_rsa_pub
+#       become: true
+#       become_user: myuser4
+
+#     - name: list
+#       command: ls -ltr /home/myuser4/.ssh/id_rsa.pub
+#       become: true
+#       become_user: myuser4
+
+
+#     - name: copy ssh
+#       copy: src=/home/myuser4/.ssh/id_rsa.pub dest=/home/myuser4/.ssh/authorized_keys
+#       copy: src=/tmp/ravi.txt dest=/home/myuser4/
+#       become: true
+#       become_user: myuser4
+
+
+     - name: setup
+       authorized_key: user=myuser4 key="{{ item }}"
+       with_file:
+         - /home/myuser4/.ssh/id_rsa.pub
+
+     - name: Give the required permission to ssh
+       file: path=/home/myuser4 mode=0700 owner=myuser4 group=myuser4
+
+
+#     - name: Setup authorized key upload
+#       authorized_key: user=myuser4 key="{{ item }}"
+#       with_file:
+#       - /home/myuser4/.ssh/id_rsa.pub
+#       become: true
+#       become_user: myuser4
+
