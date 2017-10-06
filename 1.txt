@@ -22,7 +22,7 @@
       file: path=/home/myuser4  state=directory mode=0707 owner=myuser4
 
     - name: Generate ssh keys
-      shell: ssh-keygen -t rsa  -b 4096 -C venkataravi.remella@yash.com -N aarthi -f /home/myuser4/.ssh/id_rsa
+      shell: ssh-keygen -t rsa  -b 4096 -C testuser@test.com -N aarthi -f /home/myuser4/.ssh/id_rsa
 #      args:
 #        creates: /home/myuser4/.ssh/id_rsa
 
