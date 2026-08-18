@@ -5,8 +5,9 @@ metadata:
   namespace: default
   labels:
     app: java21-prom-poc
+    deptype: argocd
 spec:
-  replicas: 2
+  replicas: 3
   selector:
     matchLabels:
       app: java21-prom-poc
