@@ -1,0 +1,22 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: |
+      {"apiVersion":"monitoring.coreos.com/v1","kind":"ServiceMonitor","metadata":{"annotations":{},"labels":{"release":"monitoring"},"name":"demo-exporter","namespace":"demo-monitoring"},"spec":{"endpoints":[{"interval":"15s","path":"/metrics","port":"metrics"}],"selector":{"matchLabels":{"app":"demo-exporter"}}}}
+  creationTimestamp: "2026-08-14T05:58:23Z"
+  generation: 1
+  labels:
+    release: monitoring
+  name: demo-exporter
+  namespace: demo-monitoring
+  resourceVersion: "252680"
+  uid: 1a2bc539-60f8-4511-81c0-44980c8db5cf
+spec:
+  endpoints:
+  - interval: 15s
+    path: /metrics
+    port: metrics
+  selector:
+    matchLabels:
+      app: demo-exporter
