@@ -1,0 +1,16 @@
+apiVersion: ://coreos.com
+kind: ServiceMonitor
+metadata:
+  name: java21-prom-monitor
+  namespace: default
+  labels:
+    release: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: java21-prom-poc
+  endpoints:
+  - port: metrics-port
+    interval: 15s
+    path: /metrics
+

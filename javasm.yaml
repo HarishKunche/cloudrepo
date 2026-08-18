@@ -1,0 +1,23 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: java21-prom-monitor
+  # Must be deployed into the same namespace as your Java Service
+  namespace: default 
+  labels:
+    # Matches your verified Helm release name exactly
+    release: monitoring 
+spec:
+  # Allows the Prometheus instance in the monitoring namespace to see cross-namespace to default
+  namespaceSelector:
+    matchNames:
+    - default
+  selector:
+    matchLabels:
+      # Matches the label metadata found inside your java21-prom-service
+      app: java21-prom-poc 
+  endpoints:
+  - port: metrics-port     # Matches the name of the port inside your Service spec
+    interval: 15s          # Frequency of the scraping loop
+    path: /metrics         # The metric telemetry collection route
+

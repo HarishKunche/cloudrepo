@@ -1,0 +1,54 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: java21-prom-poc
+  namespace: default
+  labels:
+    app: java21-prom-poc
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: java21-prom-poc
+  template:
+    metadata:
+      labels:
+        app: java21-prom-poc
+    spec:
+      containers:
+      - name: java-app
+        image: harishclouldaws510/cloudrepo:4.0
+        imagePullPolicy: Always
+        ports:
+        - name: http-metrics
+          containerPort: 8080
+        livenessProbe:
+             httpGet:
+                 path: /api/hello
+                 port: 8080
+             initialDelaySeconds: 10
+             periodSeconds: 50
+        readinessProbe:
+             httpGet:
+                path: /api/hello
+                port: 8080
+             initialDelaySeconds: 5
+             periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: java21-prom-service
+  namespace: default
+  labels:
+    app: java21-prom-poc  # Match the label selector in your ServiceMonitor
+spec:
+  selector:
+    app: java21-prom-poc
+  ports:
+    - name: metrics-port  # Match the port name in your ServiceMonitor
+      protocol: TCP
+      port: 8080
+      targetPort: 8080
+  type: ClusterIP
+
