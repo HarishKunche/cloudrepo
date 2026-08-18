@@ -6,7 +6,7 @@ metadata:
   labels:
     app: java21-prom-poc
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: java21-prom-poc
